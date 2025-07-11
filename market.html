@@ -17,69 +17,16 @@
     }
   </style>
 
+ <body>
+  <h2>🏆 Player Auction Market</h2>
+  <div id="market">Loading players...</div>
+
+  <!-- 🔽 Insert this script tag here -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      onValue,
-      update
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCpawcRZA2xkBD7RKVWd3xMZix31rwodx0",
-      authDomain: "oction-cup.firebaseapp.com",
-      projectId: "oction-cup",
-      storageBucket: "oction-cup.appspot.com",
-      messagingSenderId: "844050001578",
-      appId: "1:844050001578:web:16ede7221a80117f896ad3",
-      databaseURL: "https://oction-cup-default-rtdb.firebaseio.com"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const captain = prompt("Enter your section name:");
-
-    const marketDiv = document.getElementById("market");
-
-    function renderMarket(players) {
-      marketDiv.innerHTML = "";
-      Object.entries(players).forEach(([id, player]) => {
-        const box = document.createElement("div");
-        box.className = "market-player";
-
-        let content = `<strong>${player.name}</strong><br>Section: ${player.section}<br>Ask: ₹${player.ask}<br>`;
-        content += player.owner ? `🎉 <b>Sold to ${player.owner}</b><br>` : `💰 Current Bid: ₹${player.bid || 'None'}<br>`;
-        if (!player.owner) {
-          content += `<button onclick="placeBid('${id}', ${player.ask})">Place Bid</button>`;
-        }
-        box.innerHTML = content;
-        marketDiv.appendChild(box);
-      });
-    }
-
-    window.placeBid = (id, askPrice) => {
-      const bidValue = prompt("Enter your bid (min ₹" + askPrice + "):");
-      const bid = parseInt(bidValue);
-      if (isNaN(bid) || bid < askPrice) {
-        alert("❌ Invalid bid");
-        return;
-      }
-
-      const playerRef = ref(db, "players/" + id);
-      update(playerRef, { bid, owner: captain });
-      alert("✅ Bid placed successfully!");
-    };
-
-    const playersRef = ref(db, "players");
-    onValue(playersRef, (snapshot) => {
-      if (snapshot.exists()) {
-        renderMarket(snapshot.val());
-      } else {
-        marketDiv.innerHTML = "<p>No players registered yet.</p>";
-      }
-    });
+    // ⬆️ Paste the full Firebase JS from above here
   </script>
+</body>
+
 </head>
 <body>
   <h2>🔥 Live Auction Market</h2>
