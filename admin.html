@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Control Panel</title>
+  <style>
+    body { font-family: Arial; background: #f9f9f9; text-align: center; padding: 40px; }
+    .panel {
+      background: white; padding: 30px; border-radius: 10px;
+      width: 350px; margin: auto; box-shadow: 0 0 15px #aaa;
+    }
+    button {
+      width: 90%; padding: 12px; margin: 10px 0; font-size: 16px;
+    }
+    pre { text-align: left; background: #eee; padding: 10px; height: 150px; overflow: auto; }
+  </style>
+</head>
+<body>
+
+  <div class="panel">
+    <h2>🛠️ Admin Control Panel</h2>
+    <button onclick="resetAll()">🔄 Reset EVERYTHING</button>
+    <button onclick="clearCaptains()">🧹 Clear Captains</button>
+    <button onclick="clearPlayers()">🧹 Clear Player Market</button>
+    <button onclick="resetAuctionStatus()">🔁 Reset Auction Status</button>
+    <button onclick="showAllData()">📊 View All Data</button>
+    <pre id="output">Output will appear here...</pre>
+  </div>
+
+  <script>
+    function resetAll() {
+      localStorage.clear();
+      document.getElementById("output").textContent = "✅ All data cleared!";
+    }
+
+    function clearCaptains() {
+      localStorage.removeItem("sections");
+      localStorage.removeItem("loggedInCaptain");
+      document.getElementById("output").textContent = "✅ Captains removed.";
+    }
+
+    function clearPlayers() {
+      localStorage.removeItem("playerMarket");
+      document.getElementById("output").textContent = "✅ Player market cleared.";
+    }
+
+    function resetAuctionStatus() {
+      localStorage.removeItem("auctionOver");
+      document.getElementById("output").textContent = "✅ Auction status reset.";
+    }
+
+    function showAllData() {
+      const all = {
+        sections: JSON.parse(localStorage.getItem("sections") || "{}"),
+        playerMarket: JSON.parse(localStorage.getItem("playerMarket") || "[]"),
+        auctionOver: localStorage.getItem("auctionOver") || false,
+        loggedInCaptain: localStorage.getItem("loggedInCaptain") || null
+      };
+      document.getElementById("output").textContent = JSON.stringify(all, null, 2);
+    }
+  </script>
+
+</body>
+</html>

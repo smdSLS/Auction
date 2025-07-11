@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auction Market</title>
+  <style>
+    body { font-family: Arial; background: #f2f2f2; text-align: center; padding: 30px; }
+    h2 { margin-bottom: 10px; }
+    #countdown { font-size: 18px; margin-bottom: 20px; color: red; font-weight: bold; }
+
+    .market-player {
+      background: #fff; padding: 15px; margin: 10px auto; border-radius: 10px;
+      width: 300px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .market-player button {
+      margin-top: 10px; padding: 8px 15px; background: green; color: white;
+      border: none; border-radius: 5px; cursor: pointer;
+    }
+    .market-player button:hover {
+      background: darkgreen;
+    }
+
+    .top-btn {
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      background-color: #004d99;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .top-btn:hover {
+      background-color: #002b66;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🏆 Player Auction Market</h2>
+  <button class="top-btn" onclick="window.location.href='log in.html'">📋 Go to My Lineup</button>
+  <div id="countdown"></div>
+  <div id="market"></div>
+
+  <script>
+    const captain = localStorage.getItem("loggedInCaptain");
+    const sections = JSON.parse(localStorage.getItem("sections") || "{}");
+    const marketData = JSON.parse(localStorage.getItem("playerMarket") || "[]");
+    const marketDiv = document.getElementById("market");
+    const countdownEl = document.getElementById("countdown");
+
+    const auctionStart = localStorage.getItem("auctionStart") || new Date().toISOString();
+    localStorage.setItem("auctionStart", auctionStart);
+
+    // ⏳ 5 days countdown (in milliseconds)
+    const endTime = new Date(new Date(auctionStart).getTime() + 5 * 24 * 60 * 60 * 1000);
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = endTime - now;
+
+      if (distance < 0) {
+        countdownEl.textContent = "⛔ Auction ended";
+        return;
+      }
+
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+
+      countdownEl.textContent = `⏳ Auction ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+      setTimeout(updateCountdown, 1000);
+    }
+
+    function renderMarket() {
+      marketDiv.innerHTML = "";
+      marketData.forEach((player, index) => {
+        const box = document.createElement("div");
+        box.className = "market-player";
+        let content = `<strong>${player.name}</strong><br>Ask: ₹${player.ask}<br>`;
+
+        if (player.owner) {
+          content += `Purchased by: ${player.owner}<br>`;
+        } else {
+          content += `No bids yet<br>`;
+        }
+
+        if (!player.owner) {
+          content += `<button onclick="bid(${index})">Place Bid</button>`;
+        }
+
+        box.innerHTML = content;
+        marketDiv.appendChild(box);
+      });
+    }
+
+    function bid(index) {
+      const player = marketData[index];
+      if (player.owner) {
+        alert("❌ This player is already sold.");
+        return;
+      }
+
+      const bidValue = prompt("Enter your bid amount:");
+      const bidAmt = parseInt(bidValue);
+
+      if (isNaN(bidAmt) || bidAmt <= 0) {
+        alert("❌ Invalid bid amount");
+        return;
+      }
+
+      if (bidAmt < player.ask) {
+        alert("❌ Bid must be at least the asking price");
+        return;
+      }
+
+      player.bid = bidAmt;
+      player.owner = captain;
+
+      if (!sections[captain].players) sections[captain].players = [];
+      sections[captain].players.push(player.name);
+
+      localStorage.setItem("playerMarket", JSON.stringify(marketData));
+      localStorage.setItem("sections", JSON.stringify(sections));
+
+      alert("✅ Bid successful! Player added to your team.");
+      renderMarket();
+    }
+
+    renderMarket();
+    updateCountdown();
+  </script>
+
+</body>
+</html>

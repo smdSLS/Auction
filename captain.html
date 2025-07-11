@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Captain Signup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 320px;
+      text-align: center;
+    }
+
+    input, button {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 15px;
+    }
+
+    #message {
+      font-size: 14px;
+      color: red;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Captain Signup</h2>
+    <input type="text" id="section" placeholder="Enter Section (e.g. 9B)">
+    <input type="password" id="pass1" placeholder="Create Passcode">
+    <input type="password" id="pass2" placeholder="Confirm Passcode">
+    <button onclick="signup()">Signup</button>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    function signup() {
+      const section = document.getElementById("section").value.trim().toUpperCase();
+      const pass1 = document.getElementById("pass1").value;
+      const pass2 = document.getElementById("pass2").value;
+      const message = document.getElementById("message");
+
+      // Validations
+      if (!section || !pass1 || !pass2) {
+        message.textContent = "❌ Please fill in all fields.";
+        return;
+      }
+
+      if (pass1.length < 4) {
+        message.textContent = "❌ Passcode must be at least 4 characters.";
+        return;
+      }
+
+      if (pass1 !== pass2) {
+        message.textContent = "❌ Passcodes do not match.";
+        return;
+      }
+
+      let sections = JSON.parse(localStorage.getItem("sections") || "{}");
+
+      if (sections[section]) {
+        message.textContent = "❌ Captain for this section already exists.";
+        return;
+      }
+
+      // Save new captain
+      sections[section] = {
+        passcode: pass1,
+        players: []
+      };
+
+      localStorage.setItem("sections", JSON.stringify(sections));
+      localStorage.setItem("loggedInCaptain", section);
+
+      message.style.color = "green";
+      message.textContent = "✅ Signup successful! Redirecting...";
+
+      setTimeout(() => {
+        const auctionOver = JSON.parse(localStorage.getItem("auctionOver") || "false");
+        window.location.href = auctionOver ? "lineup.html" : "market.html";
+      }, 1200);
+    }
+  </script>
+<button class="football-button" onclick="window.location.href='market.html'">🏟️ Go to Auction Market</button>
+
+<style>
+  .football-button {
+    background: linear-gradient(to right, #228B22, #006400); /* football field colors */
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 25px;
+    border: 2px solid #fff;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: 0.3s ease;
+  }
+
+  .football-button:hover {
+    background: linear-gradient(to right, #006400, #228B22);
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+</style>
+
+
+</body>
+</html>

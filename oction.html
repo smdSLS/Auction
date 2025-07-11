@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Player Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e3f2fd;
+      text-align: center;
+      padding: 40px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>⚽ Register as a Player</h2>
+
+  <input type="text" id="name" placeholder="Your Name"><br>
+  <input type="text" id="section" placeholder="Your Section (e.g. 9B)"><br>
+  <input type="number" id="ask" placeholder="Asking Price (₹)"><br>
+
+  <button onclick="registerPlayer()">Submit</button>
+
+  <script>
+    function registerPlayer() {
+      const name = document.getElementById("name").value.trim();
+      const section = document.getElementById("section").value.trim();
+      const ask = parseInt(document.getElementById("ask").value.trim());
+
+      // Basic check (can be removed if you want)
+      if (!name || !section || isNaN(ask)) {
+        alert("Please fill all fields properly.");
+        return;
+      }
+
+      // Fetch market data or create new array
+      let market = JSON.parse(localStorage.getItem("playerMarket") || "[]");
+
+      // Add new player to market
+      market.push({ name, section, ask, owner: null, bid: null });
+      localStorage.setItem("playerMarket", JSON.stringify(market));
+
+      // ✅ Redirect
+      const url = `sataus.html?name=${encodeURIComponent(name)}&section=${encodeURIComponent(section)}`;
+      window.location.href = url;
+    }
+  </script>
+
+</body>
+</html>

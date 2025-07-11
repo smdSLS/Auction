@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Captain Lineup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e0f7fa;
+      text-align: center;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #00796b;
+    }
+
+    .player-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .player-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      margin: 12px;
+      padding: 20px;
+      width: 220px;
+    }
+
+    .back-button {
+      padding: 10px 20px;
+      background-color: #004d99;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🧤 Captain's Team Lineup (Bench)</h2>
+  <button class="back-button" onclick="window.location.href='market.html'">🏪 Back to Market</button>
+
+  <div id="lineup"></div>
+
+  <script>
+    const captain = localStorage.getItem("loggedInCaptain");
+    const marketData = JSON.parse(localStorage.getItem("playerMarket") || "[]");
+    const lineupDiv = document.getElementById("lineup");
+
+    if (!captain) {
+      lineupDiv.innerHTML = "<p>❌ Please log in as a captain first.</p>";
+    } else {
+      const players = marketData.filter(p => p.owner === captain);
+
+      if (players.length === 0) {
+        lineupDiv.innerHTML = "<p>No players have been purchased yet.</p>";
+      } else {
+        const list = document.createElement("div");
+        list.className = "player-list";
+
+        players.forEach(p => {
+          const card = document.createElement("div");
+          card.className = "player-card";
+          card.innerHTML = `
+            <strong>${p.name}</strong><br>
+            💰 ₹${p.bid || p.ask}
+          `;
+          list.appendChild(card);
+        });
+
+        lineupDiv.appendChild(list);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auction Status</title>
+  <style>
+    body { font-family: Arial; background: #fff3e0; text-align: center; padding: 50px; }
+    .status-box {
+      background: white;
+      padding: 20px;
+      margin-top: 20px;
+      border: 2px solid #ff9800;
+      display: inline-block;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h2>📋 Your Auction Status</h2>
+  <div id="statusBox" class="status-box">Loading...</div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+    const section = params.get("section");
+
+    const market = JSON.parse(localStorage.getItem("playerMarket") || "[]");
+    const player = market.find(p => p.name === name && p.section === section);
+
+    const box = document.getElementById("statusBox");
+
+    if (!player) {
+      box.innerHTML = "❌ Player not found. Please register again.";
+    } else {
+      box.innerHTML = `
+        <strong>Name:</strong> ${player.name}<br>
+        <strong>Section:</strong> ${player.section}<br>
+        <strong>Ask:</strong> ₹${player.ask}<br>
+        <strong>Status:</strong> ${player.owner ? `✅ Purchased by ${player.owner}` : "⏳ Not yet purchased"}<br>
+        ${player.bid ? `<strong>Bid:</strong> ₹${player.bid}` : ""}
+      `;
+    }
+  </script>
+</body>
+</html>

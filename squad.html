@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Football Lineup</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #e0f7fa;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h2 {
+      color: #1b5e20;
+      margin-bottom: 10px;
+    }
+
+    .field-container {
+      position: relative;
+      width: 700px;
+      height: 500px;
+      margin: 0 auto;
+      background: url('0a665d38-a0ca-4f1f-98ff-94ccda4bcebd.png') no-repeat center center;
+      background-size: cover;
+      border: 5px solid #1b5e20;
+    }
+
+    .position {
+      width: 80px;
+      height: 80px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 2px solid #333;
+      border-radius: 8px;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .bench-player {
+      background: #fff;
+      border: 2px solid #555;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 5px;
+      cursor: move;
+      display: inline-block;
+    }
+
+    .bench {
+      margin-top: 30px;
+    }
+
+    .back-button {
+      padding: 10px 20px;
+      background-color: #004d99;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>⚽ Football Field Lineup</h2>
+  <button class="back-button" onclick="window.location.href='market.html'">🏪 Back to Market</button>
+
+  <div class="field-container">
+    <!-- Example positions placed manually -->
+    <div class="position" style="top: 40px; left: 80px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <div class="position" style="top: 200px; left: 80px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <div class="position" style="top: 360px; left: 80px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
+    <div class="position" style="top: 100px; left: 250px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <div class="position" style="top: 300px; left: 250px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
+    <div class="position" style="top: 40px; left: 450px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <div class="position" style="top: 200px; left: 450px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+    <div class="position" style="top: 360px; left: 450px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+
+    <div class="position" style="top: 200px; left: 600px;" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+  </div>
+
+  <h3>🪑 Bench</h3>
+  <div id="bench"></div>
+
+  <script>
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const draggedEl = document.getElementById(data);
+      if (!ev.target.hasChildNodes()) {
+        ev.target.appendChild(draggedEl);
+      }
+    }
+
+    const captain = localStorage.getItem("loggedInCaptain");
+    const marketData = JSON.parse(localStorage.getItem("playerMarket") || "[]");
+    const bench = document.getElementById("bench");
+
+    const myPlayers = marketData.filter(p => p.owner === captain);
+
+    if (myPlayers.length === 0) {
+      bench.innerHTML = '<p>No players purchased yet.</p>';
+    } else {
+      myPlayers.forEach((player, index) => {
+        const div = document.createElement("div");
+        div.className = "bench-player";
+        div.id = `player-${index}`;
+        div.draggable = true;
+        div.ondragstart = drag;
+        div.textContent = `${player.name} (₹${player.bid || player.ask})`;
+        bench.appendChild(div);
+      });
+    }
+  </script>
+
+</body>
+</html>
