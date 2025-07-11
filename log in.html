@@ -31,8 +31,54 @@
       background-color: #1b5e20;
     }
   </style>
+
+  <!-- ✅ Firebase Setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCpawcRZA2xkBD7RKVWd3xMZix31rwodx0",
+      authDomain: "oction-cup.firebaseapp.com",
+      projectId: "oction-cup",
+      storageBucket: "oction-cup.appspot.com",
+      messagingSenderId: "844050001578",
+      appId: "1:844050001578:web:16ede7221a80117f896ad3",
+      databaseURL: "https://oction-cup-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.loginCaptain = async () => {
+      const section = document.getElementById("section").value.trim();
+      const passcode = document.getElementById("passcode").value.trim();
+
+      if (!section || !passcode) {
+        alert("❌ Please fill both fields.");
+        return;
+      }
+
+      const capRef = ref(db, "captains/" + section);
+      const snapshot = await get(capRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        if (data.passcode === passcode) {
+          localStorage.setItem("loggedInCaptain", section);
+          alert("✅ Login successful!");
+          window.location.href = "squad.html"; // Redirect to lineup page
+        } else {
+          alert("❌ Incorrect passcode.");
+        }
+      } else {
+        alert("❌ No such section registered.");
+      }
+    };
+  </script>
 </head>
 <body>
+
   <h2>Captain Login</h2>
   <div id="login-box">
     <input type="text" id="section" placeholder="Enter Section (e.g. 8A)" required><br>
@@ -40,20 +86,5 @@
     <button onclick="loginCaptain()">Login</button>
   </div>
 
-  <script>
-    function loginCaptain() {
-      const section = document.getElementById("section").value.trim();
-      const passcode = document.getElementById("passcode").value.trim();
-      const sections = JSON.parse(localStorage.getItem("sections") || "{}");
-
-      if (sections[section] && sections[section].passcode === passcode) {
-        localStorage.setItem("loggedInCaptain", section);
-        alert("✅ Login successful!");
-        window.location.href = "squad.html";
-      } else {
-        alert("❌ Invalid section or passcode. Please try again.");
-      }
-    }
-  </script>
 </body>
 </html>
