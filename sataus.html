@@ -1,45 +1,57 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Auction Status</title>
+  <title>Player Status</title>
   <style>
-    body { font-family: Arial; background: #fff3e0; text-align: center; padding: 50px; }
-    .status-box {
-      background: white;
-      padding: 20px;
-      margin-top: 20px;
-      border: 2px solid #ff9800;
-      display: inline-block;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+    body { font-family: Arial; background-color: #fff3e0; text-align: center; padding: 40px; }
+    .info { font-size: 20px; margin: 20px; }
   </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCpawcRZA2xkBD7RKVWd3xMZix31rwodx0",
+      authDomain: "oction-cup.firebaseapp.com",
+      projectId: "oction-cup",
+      storageBucket: "oction-cup.appspot.com",
+      messagingSenderId: "844050001578",
+      appId: "1:844050001578:web:16ede7221a80117f896ad3",
+      databaseURL: "https://oction-cup-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get("name");
+    const section = urlParams.get("section");
+
+    window.onload = () => {
+      const playersRef = ref(db, "players");
+      onValue(playersRef, (snapshot) => {
+        let found = false;
+        snapshot.forEach(child => {
+          const player = child.val();
+          if (player.name === name && player.section === section) {
+            found = true;
+            document.getElementById("result").innerHTML = `
+              <div class="info"><b>Name:</b> ${player.name}</div>
+              <div class="info"><b>Section:</b> ${player.section}</div>
+              <div class="info"><b>Ask Price:</b> ₹${player.ask}</div>
+              <div class="info"><b>Bid:</b> ₹${player.bid || 'None'}</div>
+              <div class="info"><b>Status:</b> ${player.owner ? `🎉 Sold to ${player.owner}` : '🔓 Still in market'}</div>
+            `;
+          }
+        });
+        if (!found) document.getElementById("result").textContent = "⚠️ Player not found.";
+      });
+    };
+  </script>
 </head>
 <body>
-  <h2>📋 Your Auction Status</h2>
-  <div id="statusBox" class="status-box">Loading...</div>
-
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const name = params.get("name");
-    const section = params.get("section");
-
-    const market = JSON.parse(localStorage.getItem("playerMarket") || "[]");
-    const player = market.find(p => p.name === name && p.section === section);
-
-    const box = document.getElementById("statusBox");
-
-    if (!player) {
-      box.innerHTML = "❌ Player not found. Please register again.";
-    } else {
-      box.innerHTML = `
-        <strong>Name:</strong> ${player.name}<br>
-        <strong>Section:</strong> ${player.section}<br>
-        <strong>Ask:</strong> ₹${player.ask}<br>
-        <strong>Status:</strong> ${player.owner ? `✅ Purchased by ${player.owner}` : "⏳ Not yet purchased"}<br>
-        ${player.bid ? `<strong>Bid:</strong> ₹${player.bid}` : ""}
-      `;
-    }
-  </script>
+  <h2>📊 Player Registration Status</h2>
+  <div id="result">Loading status...</div>
 </body>
 </html>
