@@ -15,6 +15,53 @@
       font-size: 16px;
     }
   </style>
+
+  <!-- ✅ Firebase Setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // ✅ Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCpawcRZA2xkBD7RKVWd3xMZix31rwodx0",
+      authDomain: "oction-cup.firebaseapp.com",
+      projectId: "oction-cup",
+      storageBucket: "oction-cup.appspot.com",
+      messagingSenderId: "844050001578",
+      appId: "1:844050001578:web:16ede7221a80117f896ad3",
+      databaseURL: "https://oction-cup-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ✅ Register Function
+    window.registerPlayer = async () => {
+      const name = document.getElementById("name").value.trim();
+      const section = document.getElementById("section").value.trim();
+      const ask = parseInt(document.getElementById("ask").value.trim());
+
+      if (!name || !section || isNaN(ask)) {
+        alert("❌ Please fill all fields properly.");
+        return;
+      }
+
+      const newRef = push(ref(db, "players"));
+      await set(newRef, {
+        name,
+        section,
+        ask,
+        owner: null,
+        bid: null
+      });
+
+      alert("✅ Registered successfully!");
+
+      // ✅ Redirect to player status page
+      const url = `sataus.html?name=${encodeURIComponent(name)}&section=${encodeURIComponent(section)}`;
+      window.location.href = url;
+    };
+  </script>
 </head>
 <body>
 
@@ -25,31 +72,6 @@
   <input type="number" id="ask" placeholder="Asking Price (₹)"><br>
 
   <button onclick="registerPlayer()">Submit</button>
-
-  <script>
-    function registerPlayer() {
-      const name = document.getElementById("name").value.trim();
-      const section = document.getElementById("section").value.trim();
-      const ask = parseInt(document.getElementById("ask").value.trim());
-
-      // Basic check (can be removed if you want)
-      if (!name || !section || isNaN(ask)) {
-        alert("Please fill all fields properly.");
-        return;
-      }
-
-      // Fetch market data or create new array
-      let market = JSON.parse(localStorage.getItem("playerMarket") || "[]");
-
-      // Add new player to market
-      market.push({ name, section, ask, owner: null, bid: null });
-      localStorage.setItem("playerMarket", JSON.stringify(market));
-
-      // ✅ Redirect
-      const url = `sataus.html?name=${encodeURIComponent(name)}&section=${encodeURIComponent(section)}`;
-      window.location.href = url;
-    }
-  </script>
 
 </body>
 </html>
