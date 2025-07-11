@@ -41,97 +41,130 @@
   <button class="top-btn" onclick="window.location.href='log in.html'">📋 Go to My Lineup</button>
   <div id="countdown"></div>
   <div id="market"></div>
+<script>
+  const captain = localStorage.getItem("loggedInCaptain");
+  const sections = JSON.parse(localStorage.getItem("sections") || "{}");
+  const marketData = JSON.parse(localStorage.getItem("playerMarket") || "[]");
+  const marketDiv = document.getElementById("market");
+  const countdownEl = document.getElementById("countdown");
 
-  <script>
-    const captain = localStorage.getItem("loggedInCaptain");
-    const sections = JSON.parse(localStorage.getItem("sections") || "{}");
-    const marketData = JSON.parse(localStorage.getItem("playerMarket") || "[]");
-    const marketDiv = document.getElementById("market");
-    const countdownEl = document.getElementById("countdown");
+  const auctionStart = localStorage.getItem("auctionStart") || new Date().toISOString();
+  localStorage.setItem("auctionStart", auctionStart);
 
-    const auctionStart = localStorage.getItem("auctionStart") || new Date().toISOString();
-    localStorage.setItem("auctionStart", auctionStart);
+  const auctionDuration = 5 * 24 * 60 * 60 * 1000; // 5 days
+  const endTime = new Date(new Date(auctionStart).getTime() + auctionDuration);
 
-    // ⏳ 5 days countdown (in milliseconds)
-    const endTime = new Date(new Date(auctionStart).getTime() + 5 * 24 * 60 * 60 * 1000);
+  function updateCountdown() {
+    const now = new Date().getTime();
+    const distance = endTime - now;
 
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const distance = endTime - now;
+    if (distance < 0) {
+      countdownEl.textContent = "⛔ Auction ended";
+      return;
+    }
 
-      if (distance < 0) {
-        countdownEl.textContent = "⛔ Auction ended";
-        return;
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+
+    countdownEl.textContent = `⏳ Auction ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+    setTimeout(updateCountdown, 1000);
+  }
+
+  function renderMarket() {
+    marketDiv.innerHTML = "";
+    const now = new Date().getTime();
+
+    marketData.forEach((player, index) => {
+      const box = document.createElement("div");
+      box.className = "market-player";
+
+      let content = `<strong>${player.name}</strong><br>Ask: ₹${player.ask}<br>`;
+
+      // Show highest bid
+      if (player.bids && player.bids.length > 0) {
+        const highest = player.bids.reduce((a, b) => a.amount > b.amount ? a : b);
+        content += `Highest Bid: ₹${highest.amount} by ${highest.bidder}<br>`;
+      } else {
+        content += `No bids yet<br>`;
       }
 
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      // Check auction timer
+      const bidEnd = new Date(player.bidStart || 0).getTime() + auctionDuration;
+      const auctionOver = player.bidStart && now > bidEnd;
 
-      countdownEl.textContent = `⏳ Auction ends in: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+      if (auctionOver) {
+        if (!player.owner && player.bids && player.bids.length > 0) {
+          const highest = player.bids.reduce((a, b) => a.amount > b.amount ? a : b);
+          player.owner = highest.bidder;
+          player.bid = highest.amount;
 
-      setTimeout(updateCountdown, 1000);
-    }
+          if (!sections[player.owner].players) sections[player.owner].players = [];
+          if (!sections[player.owner].players.includes(player.name)) {
+            sections[player.owner].players.push(player.name);
+          }
 
-    function renderMarket() {
-      marketDiv.innerHTML = "";
-      marketData.forEach((player, index) => {
-        const box = document.createElement("div");
-        box.className = "market-player";
-        let content = `<strong>${player.name}</strong><br>Ask: ₹${player.ask}<br>`;
-
-        if (player.owner) {
-          content += `Purchased by: ${player.owner}<br>`;
-        } else {
-          content += `No bids yet<br>`;
+          localStorage.setItem("sections", JSON.stringify(sections));
+          localStorage.setItem("playerMarket", JSON.stringify(marketData));
         }
+      }
 
-        if (!player.owner) {
-          content += `<button onclick="bid(${index})">Place Bid</button>`;
-        }
-
-        box.innerHTML = content;
-        marketDiv.appendChild(box);
-      });
-    }
-
-    function bid(index) {
-      const player = marketData[index];
       if (player.owner) {
-        alert("❌ This player is already sold.");
-        return;
+        content += `<b>🏆 Sold to ${player.owner} for ₹${player.bid}</b><br>`;
+      } else if (!auctionOver) {
+        content += `<button onclick="bid(${index})">Place Bid</button>`;
+      } else {
+        content += `<b>⛔ Auction Closed</b><br>`;
       }
 
-      const bidValue = prompt("Enter your bid amount:");
-      const bidAmt = parseInt(bidValue);
+      box.innerHTML = content;
+      marketDiv.appendChild(box);
+    });
+  }
 
-      if (isNaN(bidAmt) || bidAmt <= 0) {
-        alert("❌ Invalid bid amount");
-        return;
-      }
+  function bid(index) {
+    const player = marketData[index];
 
-      if (bidAmt < player.ask) {
-        alert("❌ Bid must be at least the asking price");
-        return;
-      }
+    if (!player.bids) player.bids = [];
 
-      player.bid = bidAmt;
-      player.owner = captain;
+    const now = new Date().getTime();
+    const bidEnd = new Date(player.bidStart || 0).getTime() + auctionDuration;
+    const auctionOver = player.bidStart && now > bidEnd;
 
-      if (!sections[captain].players) sections[captain].players = [];
-      sections[captain].players.push(player.name);
-
-      localStorage.setItem("playerMarket", JSON.stringify(marketData));
-      localStorage.setItem("sections", JSON.stringify(sections));
-
-      alert("✅ Bid successful! Player added to your team.");
-      renderMarket();
+    if (auctionOver) {
+      alert("❌ Bidding for this player has ended.");
+      return;
     }
 
+    const bidValue = prompt("Enter your bid amount:");
+    const bidAmt = parseInt(bidValue);
+
+    if (isNaN(bidAmt) || bidAmt <= 0) {
+      alert("❌ Invalid bid amount");
+      return;
+    }
+
+    if (bidAmt < player.ask) {
+      alert("❌ Bid must be at least the asking price");
+      return;
+    }
+
+    // Record first bid time
+    if (!player.bidStart) player.bidStart = new Date().toISOString();
+
+    // Add this bid
+    player.bids.push({ bidder: captain, amount: bidAmt, time: new Date().toISOString() });
+
+    localStorage.setItem("playerMarket", JSON.stringify(marketData));
     renderMarket();
-    updateCountdown();
-  </script>
+  }
+
+  renderMarket();
+  updateCountdown();
+</script>
+
 
 </body>
 </html>
